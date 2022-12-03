@@ -35,5 +35,34 @@ event MarketItemCreated (
     bool sold
 );
 
+
+//Getting Listing Price
+function getListingPrice() public view returns(uint256){
+    return listingPrice;
+}
+
+//Update Listing price
+function updateListingPrice(uint _listingPrice) public payable{
+    require(owner == msg.sender, "Only market maker can update price");
+    listingPrice = _listingPrice;
+}
+
+//Create a market Item
+function createMarketItem(uint256 tokenId, uint256 price) private {
+require(price > 0, "Price Must be gretter then 0");
+require(msg.value == listingPrice, "Price must be equal to listing price");
+
+itToMarketItem[tokenId] = MarketItem(
+    tokenId, 
+    payable(msg.sender),
+    payable(address(this)),
+    price,
+    false
+);
+
+_transfer(msg.sender, address(this), tokenId);
+emit MarketItemCreated(tokenId, msg.sender, address(this), price, false);
+}
+
 }
 
