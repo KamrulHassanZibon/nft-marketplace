@@ -64,5 +64,33 @@ _transfer(msg.sender, address(this), tokenId);
 emit MarketItemCreated(tokenId, msg.sender, address(this), price, false);
 }
 
+//minting a new token and list it in marketplace
+
+function createToken(string memory tokenURI, uint256 price) public payable returns(uint){
+    _tokenIds.increment();
+    uint256 newTokenId = _tokenIds.current();
+    _mint(msg.sender, newTokenId);
+    _setTokenURI(newTokenId, tokenURI);
+    createMarketItem(newTokenId, price);
+    return newTokenId;
+}
+
+//Crating the sale of a marketplace item
+//Transfer ownership of the Item
+function createMarketSale(uint256 tokenId) public payable {
+    uint price = idToMarketItem[tokenId].price;
+    address seller = idToMarketItem[tokenId].seller;
+
+    require(msg.value == price, "Please sublit the asking price in order to make purchase");
+    idToMarketItem[tokenId].owner = payable(msg.sender);
+    idToMarketItem[tokenId].sold = true;
+    idToMarketItem[tokenId].seller = payable(address(0));
+    _itemSold.increment();
+    _transfer(address(this), msg.sender, tokenId);
+    payable(owner).transfer(listingPrice);
+    payable(seller).transfer(msg.value);
+
+}
+
 }
 
